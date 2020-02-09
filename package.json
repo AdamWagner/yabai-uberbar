@@ -1,0 +1,18 @@
+{
+  "name": "yabai-uberbar",
+  "version": "1.0.0",
+  "description": "Personal [Übersicht](http://tracesof.net/uebersicht/) bar with graphic overview of windows on each space for use with [yabai](https://github.com/koekeishiya/yabai).",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Adam Wagner",
+  "license": "BSD 2-Clause License",
+  "dependencies": {
+    "shell-env": "^3.0.0"
+  }
+}

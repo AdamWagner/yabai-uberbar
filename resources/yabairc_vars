@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# ====== Variables =============================
+
+# native, uber
+export BAR="uber"
+# export BAR="native"
+export WINDOW_GAP=10
+export PADDING=$WINDOW_GAP
+
+if test "$BAR" = 'uber'; then
+	export YABAI_BAR="off"
+	export BAR_HEIGHT=40
+elif test "$BAR" = 'native'; then
+	export YABAI_BAR="on"
+	export BAR_HEIGHT=$PADDING
+else
+	export PADDING_TOP=$PADDING
+fi
+
+export PADDING_TOP=$((BAR_HEIGHT + PADDING))
+export NORMAL_BORDER_COLOR=0x770fcbff
+export ACTIVE_BORDER_COLOR=0xff0fcbff
+export MOVE_BORDER_COLOR=0xffff0f77
+export RESIZE_BORDER_COLOR=0xffffa70f
+
+
+center_grid='26:26:5:5:16:16'
+small_center_grid='5:5:4:0:1:1'
+left_half='1:2:0:0:1:1'
+right_half='1:2:1:0:1:1'
+
+# ====== Output =============================
+echo $BAR_HEIGHT

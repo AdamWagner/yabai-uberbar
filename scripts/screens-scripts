@@ -1,0 +1,18 @@
+#!/usr/local/bin/dash
+
+PATH=$(/usr/libexec/path_helper)
+
+resolution=$(yabai -m query --displays | jq -r '{screenWidth: .[0].frame.w, screenHeight: .[0].frame.h } | tostring')
+config="$(/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars)"
+current=$(space-select)
+spaces=$(spaces-windows)
+
+# jq -n = Don't read any input at all. Useful to construct JSON data from scratch
+JSON_STRING=$( jq -n \
+	 --arg cu "$current" \
+	 --arg sc "$spaces" \
+	 --arg cf "$config" \
+	 --argjson re "$resolution" \
+	 '{spaces: $sc | fromjson, current: $cu, config: {barHeight: $cf, resolution: $re} }' )
+
+echo "$JSON_STRING"

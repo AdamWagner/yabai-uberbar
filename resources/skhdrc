@@ -1,0 +1,326 @@
+#!/bin/sh
+# shellcheck disable
+
+# TODO: find another way to share color vars between skhdrc and yabairc. THIS IS PROBABLY SLOW!
+:: default  : yabai -m config active_window_border_color $(cat "/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars" | grep NORMAL_BORDER_COLOR | cut -d "=" -f 2)
+:: focus  @ : yabai -m config active_window_border_color $(cat "/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars" | grep ACTIVE_BORDER_COLOR | cut -d "=" -f 2)
+:: move   @ : yabai -m config active_window_border_color $(cat "/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars" | grep MOVE_BORDER_COLOR | cut -d "=" -f 2)
+:: resize @ : yabai -m config active_window_border_color $(cat "/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars" | grep RESIZE_BORDER_COLOR | cut -d "=" -f 2)
+:: passthrough
+
+
+# restart yabai
+shift + alt - r   : "/Users/adamwagner/Programming/dotfiles/scripts/yabai/yabai-restart"
+
+# Float the next window and forward the keypress
+# cmd - 0x2B -> : \
+#     yabai -m signal --add label=float_next_window_created event=window_created action='yabai -m signal --remove float_next_window_created; yabai -m signal --remove float_next_application_launched; yabai -m query --windows --window $YABAI_WINDOW_ID | jq -er ".floating == 0" && yabai -m window $YABAI_WINDOW_ID --toggle float' && \
+#     yabai -m signal --add label=float_next_application_launched event=application_launched action='yabai -m signal --remove float_next_window_created; yabai -m signal --remove float_next_application_launched; yabai -m query --windows | jq -r ".[] | select(.pid == $YABAI_PROCESS_ID && .floating == 0).id" | xargs -I{} yabai -m window {} --toggle float'
+
+# Snap floating windows {fullscreen, left, right}
+# Conflicts with default macos text selection!
+ctrl + alt - up     : yabai -m window --grid 1:1:0:0:1:1
+ctrl + alt - left   : yabai -m window --grid 1:2:0:0:1:1
+ctrl + alt - right  : yabai -m window --grid 1:2:1:0:1:1
+
+# Focus windows with alt + vim keys without activating a mode
+# alt - j : win-focus south
+# alt - k : win-focus north
+# alt - l : win-focus east
+# alt - h : win-focus west
+
+# # old way
+alt - j : yabai -m window --focus south
+alt - k : yabai -m window --focus north
+alt - l : yabai -m window --focus east
+alt - h : yabai -m window --focus west
+
+# Making window parent is a common action,
+# so make available without mode
+alt - p : yabai -m window --toggle zoom-parent
+
+# --grid maximizes floating windows
+# alt - m : yabai -m window --grid 100:1:10:0:1:100 || yabai -m window --toggle zoom-fullscreen && uber-bar-refresh;
+alt - m : yabai -m window --toggle zoom-fullscreen && uber-bar-refresh;
+
+# Toggle yabai menu bar
+# (requires /bin/sh, not /usr/local/bin/dash)
+alt - b : yabai -m config status_bar $([ $(yabai -m config status_bar) == 'on' ] && echo off || echo on)
+
+# float / unfloat window and center on screen
+alt - t : yabai -m window --toggle float;\
+          yabai -m window --grid 8:8:1:1:6:6
+
+
+# Various attempts at picture-in-picture {{{
+
+# TODO: Change to script to toggle between:
+#					2. picture-in-picture
+#					1. floating centered (qlt-t)
+#       Currently, toggling out of pip will tile. If the win is then centered
+#       (alt-t), it messes up the toggling states for the next alt-i.
+
+# toggle sticky, topmost and resize to picture-in-picture size
+# alt - i : yabai -m window --toggle sticky;\
+#           yabai -m window --toggle topmost;\
+#           yabai -m window --grid 5:5:4:0:1:1
+# }}}
+# https://github.com/koekeishiya/yabai/issues/286
+alt - i : yabai -m window --toggle sticky;\
+          yabai -m window --toggle topmost;\
+          yabai -m window --toggle border;\
+          yabai -m window --toggle pip
+
+# Basic 'switch desktop'
+cmd + ctrl  - k : yabai -m space --focus next
+cmd + ctrl  - j : yabai -m space --focus prev
+cmd + ctrl  - h : yabai -m space --focus recent
+
+# expose with desktop preview
+cmd + ctrl - u : /Applications/missionControlFullDesktopBar.app/Contents/MacOS/missionControlFullDesktopBar -d -i
+
+# jump to space
+cmd + ctrl - 1 : yabai -m space --focus 1
+cmd + ctrl - 2 : yabai -m space --focus 2
+cmd + ctrl - 3 : yabai -m space --focus 3
+cmd + ctrl - 4 : yabai -m space --focus 4
+cmd + ctrl - 5 : yabai -m space --focus 5
+cmd + ctrl - 6 : yabai -m space --focus 6
+cmd + ctrl - 7 : yabai -m space --focus 7
+cmd + ctrl - 8 : yabai -m space --focus 8
+cmd + ctrl - 9 : yabai -m space --focus 9
+
+
+# Create desktop, move focused window, and follow
+cmd + ctrl - n : yabai -m space --create;\
+													id=$(yabai -m query --spaces | /usr/local/bin/jq '. | length');\
+													yabai -m window --space "$id";\
+													yabai -m space --focus "$id";\
+
+
+# Create desktop and follow focus
+cmd + alt - n : yabai -m space --create;\
+													id=$(yabai -m query --spaces | jq '. | length');\
+													yabai -m space --focus "$id";\
+
+
+# destroy desktop
+cmd + alt - w : space-destroy
+
+# FR: pass selector to space --destroy
+# yabai -m space --destroy <SPACE_SEL>
+
+# FR: pass selector to space --create to insert at index
+# yabai -m space --create <SPACE_SEL>
+
+
+# Move focused window `outta here!`
+move < u : $DOTFILES/scripts/yabai/win-auto-throw
+
+# move focussed window into dedicated space to right of current space
+move < g : win-throw-new-space "next"
+
+
+
+
+
+# modes
+# ┌┬┐┌─┐┌┬┐┌─┐┌─┐
+# ││││ │ ││├┤ └─┐
+# ┴ ┴└─┘─┴┘└─┘└─┘
+# CTRL-SPACE is the global hotkey to toggle in/out of modal mode. Entry is
+# always to FOCUS mode. Getting out of any mode can also be done with ESCAPE.
+default             < ctrl - space               ; focus
+
+focus, move, resize < ctrl - space               ; default
+focus, move, resize < escape                     ; default
+
+default             < cmd + ctrl + shift - p     ; passthrough
+passthrough         < escape                     ; default
+
+
+# Once in FOCUS mode (or any other mode other than default), you can switch
+# modes with single keystroke. (mnemonic: letter corresponds to first letter of
+# mode name, with exception of warpnf, which is a variant invoked with shift)
+focus, move, resize < f                 ; focus
+focus, move, resize < w                 ; move
+focus, move, resize < r                 ; resize
+
+
+# In any chunkwm mode, switch desktop commands from above ↑ bring window along
+focus, move, resize < cmd + ctrl - k : yabai -m window --space next; yabai -m space --focus next
+focus, move, resize < cmd + ctrl - j : yabai -m window --space prev; yabai -m space --focus prev
+focus, move, resize < cmd + ctrl - h : yabai -m window --space prev; yabai -m space --focus recent
+
+# Move floating windows left / right (replace divvy)
+# FIX: conflict with toggling developer tools in chrome
+# cmd + alt - i  : yabai -m window --grid 1:1:0:0:1:1
+# cmd + alt - j  : yabai -m window --grid 1:2:0:0:1:1
+# cmd + alt - k  : yabai -m window --grid 1:2:1:0:1:1
+# cmd + alt - l  : yabai -m window --grid 1:5:5:0:1:1
+
+# The following keybindings are available in all modes.
+focus, move, resize < e                 : yabai -m space --balance
+focus, move, resize < x                 : yabai -m space --mirror x-axis
+focus, move, resize < y                 : yabai -m space --mirror y-axis
+focus, move, resize < space             : yabai -m space --rotate 90
+
+focus, move, resize < m                 : yabai -m window --toggle zoom-fullscreen    # mnemonic: monacle
+focus, move, resize < p                 : yabai -m window --toggle zoom-parent        # mnemonic: _p_arent
+
+focus, move, resize < i                 : yabai -m window --toggle split         # mnemonic: couldn't think of one!
+focus, move, resize < t                 : yabai -m window --toggle float         # mnemonic: floa_t_
+focus, move, resize < s                 : yabai -m window --toggle sticky        # mnemonic: floa_t_
+focus, move, resize < ctrl - e          : yabai -m window --toggle fade
+
+
+# toggle desktop offset
+focus, move, resize < o                 : yabai -m space --toggle gap; yabai -m space --toggle padding
+
+# When in mode, use same keys to shift focus
+focus, move, resize < alt - k            : yabai -m window --focus north
+focus, move, resize < alt - j            : yabai -m window --focus south
+focus, move, resize < alt - l            : yabai -m window --focus east
+focus, move, resize < alt - h            : yabai -m window --focus west
+
+# No modifier moves
+focus  < j            : yabai -m window --focus south
+focus  < k            : yabai -m window --focus north
+focus  < l            : yabai -m window --focus east
+focus  < h            : yabai -m window --focus west
+
+
+# Change the layout mode of a desktop to one of the three supported modes.
+focus           < cmd - b           : yabai -m space --layout bsp
+focus           < cmd - f           : yabai -m space --layout float
+
+
+# Warp windows with direction keys in move mode
+move            < k                   : yabai -m window --warp north
+move            < j                   : yabai -m window --warp south
+move            < l                   : yabai -m window --warp east
+move            < h                   : yabai -m window --warp west
+
+cmd + shift - k : if-float 'cmd + shift - k' win-move-float 'k'
+cmd + shift - j : if-float 'cmd + shift - j' win-move-float 'j'
+cmd + shift - l : if-float 'cmd + shift - l' win-move-float 'l'
+cmd + shift - h : if-float 'cmd + shift - h' win-move-float 'h'
+
+# Swap windows by adding ctrl to vim keys
+move            < ctrl - k            : yabai -m window --swap north
+move            < ctrl - j            : yabai -m window --swap south
+move            < ctrl - l            : yabai -m window --swap east
+move            < ctrl - h            : yabai -m window --swap west
+
+
+# move active space left or right
+move < cmd - l : yabai -m space --move next; #skhd -k "o"; skhd -k "o"; skhd -k "escape";
+move < cmd - h : yabai -m space --move prev; #skhd -k "o"; skhd -k "o"; skhd -k "escape";
+
+# TODO: factor out space iteration
+# TODO: factor out follow / nofollow patterns
+
+
+# Update status color to force status bar to refresh
+fn + cmd + ctrl - h : yabai -m space --move prev && yabai -m config status_bar_foreground_color 0xff5e81ac
+fn + cmd + ctrl - l : yabai -m space --move next && yabai -m config status_bar_foreground_color 0xff5e81ac
+fn + cmd + ctrl - k : yabai -m space --display next && yabai -m config status_bar_foreground_color 0xff5e81ac
+fn + cmd + ctrl - j : yabai -m space --display prev && yabai -m config status_bar_foreground_color 0xff5e81ac
+
+
+
+# move window to space and follow.
+move            < 1           			: yabai -m window --space 1; yabai -m space --focus 1
+move            < 2           			: yabai -m window --space 2; yabai -m space --focus 2
+move            < 3           			: yabai -m window --space 3; yabai -m space --focus 3
+move            < 4           			: yabai -m window --space 4; yabai -m space --focus 4
+move            < 5           			: yabai -m window --space 5; yabai -m space --focus 5
+move            < 6           			: yabai -m window --space 6; yabai -m space --focus 6
+move            < 7           			: yabai -m window --space 7; yabai -m space --focus 7
+move            < 8           			: yabai -m window --space 8; yabai -m space --focus 8
+move            < 9           			: yabai -m window --space 9; yabai -m space --focus 9
+
+# move window to space *without* follow.
+move            < ctrl - 1         	: yabai -m window --space 1; skhd -k "escape";
+move            < ctrl - 2         	: yabai -m window --space 2; skhd -k "escape";
+move            < ctrl - 3         	: yabai -m window --space 3; skhd -k "escape";
+move            < ctrl - 4         	: yabai -m window --space 4; skhd -k "escape";
+move            < ctrl - 5         	: yabai -m window --space 5; skhd -k "escape";
+move            < ctrl - 6         	: yabai -m window --space 6; skhd -k "escape";
+move            < ctrl - 7         	: yabai -m window --space 7; skhd -k "escape";
+move            < ctrl - 8         	: yabai -m window --space 8; skhd -k "escape";
+move            < ctrl - 9         	: yabai -m window --space 9; skhd -k "escape";
+
+
+
+
+
+
+# Resize in both directions without a modifier
+# Only one of the two chained commands gets executed in each of the four scenarios.
+# The setup can be described as moving the region separators in the specified direction instead of making the regions explicitly larger/smaller.
+# i3 style resize from here: https://github.com/koekeishiya/yabai/issues/21
+
+# resize < h : yabai -m window --resize left:-50:0 ; yabai -m window --resize right:-50:0
+# resize < j : yabai -m window --resize bottom:0:50 ; yabai -m window --resize top:0:50
+# resize < k : yabai -m window --resize top:0:-50 ; yabai -m window --resize bottom:0:-50
+# resize < l : yabai -m window --resize right:50:0 ; yabai -m window --resize left:50:0
+
+# resize < shift - h : yabai -m window --resize left:-300:0 ; yabai -m window --resize right:-300:0;
+# resize < shift - j : yabai -m window --resize bottom:0:300 ; yabai -m window --resize top:0:300
+# resize < shift - k : yabai -m window --resize top:0:-300 ; yabai -m window --resize bottom:0:-300
+# resize < shift - l : yabai -m window --resize right:300:0 ; yabai -m window --resize left:300:0
+
+
+
+# Updated resize logic from https://github.com/koekeishiya/yabai/issues/200 ----
+# Downside is that it can only "grow" a window between two windows
+
+resize < h : yabai -m window west --resize right:-50:0 2> /dev/null || yabai -m window --resize right:-50:0
+resize < j : yabai -m window north --resize bottom:0:50 2> /dev/null || yabai -m window --resize bottom:0:50
+resize < k : yabai -m window south --resize top:0:-50 2> /dev/null || yabai -m window --resize top:0:-50
+resize < l : yabai -m window east --resize left:50:0 2> /dev/null || yabai -m window --resize left:50:0
+
+
+resize < shift - h : yabai -m window west --resize right:-300:0 2> /dev/null || yabai -m window --resize right:-300:0
+resize < shift - j : yabai -m window north --resize bottom:0:300 2> /dev/null || yabai -m window --resize bottom:0:300
+resize < shift - k : yabai -m window south --resize top:0:-300 2> /dev/null || yabai -m window --resize top:0:-300
+resize < shift - l : yabai -m window east --resize left:300:0 2> /dev/null || yabai -m window --resize left:300:0
+
+
+
+# inbox
+alt - g :osascript -e 'tell application id "com.runningwithcrayons.Alfred" to run trigger "googler" in workflow ".io.adamwagner.alfred.safari" with argument ""'
+
+# Adjust Gaps and Paddning: Minus/Plus key
+focus, resize, move < 0x18                  :  yabai -m space --padding rel:25:25:25:25; yabai -m space --gap rel:30
+focus, resize, move < 0x1B                  :  yabai -m space --padding rel:-25:-25:-25:-25; yabai -m space --gap rel:-30
+# focus, resize, move < alt - 0x18            :  yabai -m space --gap rel:30
+# focus, resize, move < alt - 0x1B            :  yabai -m space --gap rel:-30
+# focus, resize, move < shift - 0x18          :  yabai -m space --padding rel:25:25:25:25
+# focus, resize, move < shift - 0x1B          :  yabai -m space --padding rel:-25:-25:-25:-25
+focus, resize, move < 0                     :  yabai -m space --toggle padding; yabai -m space --toggle gap
+
+
+
+# https://github.com/jonohrt/dotfiles/blob/master/.skhdrc ----------------------{{{
+
+  # # Set all windows on active space to zoom-fullscreen
+  # shift + cmd - f: yabai -m query --windows --space \
+  #     | jq -re '.[] | select(."zoom-fullscreen" == 0) | .id' \
+  #     | xargs -I{} yabai -m window {} --toggle zoom-fullscreen
+
+  # # Set all windows on active space back to normal
+  # shift + cmd - e : yabai -m query --windows --space \
+  #     | jq -re '.[] | select(."zoom-fullscreen" == 1) | .id' \
+  #     | xargs -I{} yabai -m window {} --toggle zoom-fullscreen
+
+#}}}
+
+
+
+
+
+
+
+
