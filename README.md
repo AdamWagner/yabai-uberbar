@@ -8,7 +8,8 @@ _Disclaimers:_
   tweaking to work on your system
 
 *Screen Shots:*
-![img](https://user-images.githubusercontent.com/24897042/47940515-20933800-deeb-11e8-82dd-d3c7002cd718.png)
+![img](https://github.com/AdamWagner/yabai-uberbar/blob/master/resources/screenshots/yabai-uberbar.png?raw=true)
+![img](https://github.com/AdamWagner/yabai-uberbar/blob/master/resources/screenshots/yabai-uberbar-demo.gif?raw=true)
 
 This widget is a heavily modified form of [blaadje/fancyBar](https://github.com/blaadje/fancyBar#readme), which itself was based on [apierz/nerdbar.widget](https://github.com/apierz/nerdbar.widget).
 
