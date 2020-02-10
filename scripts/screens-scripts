@@ -1,18 +1,29 @@
 #!/usr/local/bin/dash
 
 PATH=$(/usr/libexec/path_helper)
-
 resolution=$(yabai -m query --displays | jq -r '{screenWidth: .[0].frame.w, screenHeight: .[0].frame.h } | tostring')
 config="$(/Users/adamwagner/Programming/dotfiles/window-managers/yabai/yabairc_vars)"
 current=$(space-select)
 spaces=$(spaces-windows)
 
-# jq -n = Don't read any input at all. Useful to construct JSON data from scratch
-JSON_STRING=$( jq -n \
-	 --arg cu "$current" \
-	 --arg sc "$spaces" \
-	 --arg cf "$config" \
-	 --argjson re "$resolution" \
-	 '{spaces: $sc | fromjson, current: $cu, config: {barHeight: $cf, resolution: $re} }' )
+# heredoc ~25ms faster than jq at constructing json output
+# details: {{{
+# Benchmark #1: construct json output with jq
+#   Time (mean ± σ):     189.7 ms ±   1.8 ms    [User: 235.9 ms, System: 30.6 ms]
+#   Range (min … max):   185.5 ms … 193.3 ms    15 runs
 
-echo "$JSON_STRING"
+# Benchmark #1: construct json output with heredoc
+#   Time (mean ± σ):     165.0 ms ±   3.1 ms    [User: 211.4 ms, System: 30.7 ms]
+#   Range (min … max):   161.4 ms … 171.5 ms    17 runs
+# }}}
+cat <<EOF
+{
+  "spaces": $spaces,
+  "current": $current,
+  "config": {
+    "barHeight": "$config",
+    "resolution": $resolution
+  }
+}
+EOF
+
