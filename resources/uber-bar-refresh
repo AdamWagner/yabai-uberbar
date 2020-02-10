@@ -1,5 +1,35 @@
-#!/usr/bin/env osascript
+#!/bin/bash
+# Modified from: https://github.com/marshallbrekka/yabai-config/ on 2020-02-09
 
-tell application "Übersicht"
-	refresh widget id "yabai-uberbar-jsx"
-end tell
+# NOTE: If uebersicht details change and the websocket approach breaks,
+# set compatibility_mode="true"
+compatibility_mode="false"
+compatibility_mode="true"
+
+# We can refresh ubersicht in 13ms instead of 117ms
+# by using `websocat` instead of Applescript (see details below).
+# If this ever breaks we can always fall back to using applescript script to regain functionality.
+# Performance details (2020-02-09):  {{{
+#       Benchmark #1: websocat
+#         Time (mean ± σ):      13.0 ms ±   2.6 ms
+#         Range (min … max):     8.4 ms …  27.5 ms    170 runs
+
+#     Benchmark #2: Applescript
+#       Time (mean ± σ):     117.4 ms ±  16.8 ms
+#       Range (min … max):    95.6 ms … 139.0 ms    22 runs
+# }}}
+if [[ $(type -P websocat) = "" || "$compatibility_mode" = "true" ]]; then
+   echo "Falling back to applescript, websocat not installed. https://github.com/vi/websocat"
+   osascript -e 'tell application id "tracesOf.Uebersicht" to refresh widget id "yabai-uberbar-jsx"'
+   return
+fi
+
+# This is the Uebersicht server address.
+HOST=127.0.0.1:41416
+
+payload="\"yabai-uberbar-jsx\""
+ws_event="WIDGET_WANTS_REFRESH"
+# echo "Posting event ${ws_event} with payload ${payload}"
+# The server checks the origin to filter out invalid requests, so make sure we set it.
+echo "{\"type\":\"${ws_event}\",\"payload\":${payload}}" |
+    websocat -E --origin http://$HOST ws://$HOST

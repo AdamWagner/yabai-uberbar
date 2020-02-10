@@ -66,7 +66,9 @@ An example implementation of [uber-bar-refresh](https://github.com/AdamWagner/ya
 
 - Flesh out "zoomed window indicator" POC
 - Improve visibility of space index number against window edges
+- Faster performance. Consider [React-nodegui](https://react.nodegui.org/)?
 - Indicate active window
 - Indicate application running in active window
 - Multi-monitor support
+- Add time, date, battery, wifi, etc. See [/qhuyduong/yabai-status-bar](https://github.com/qhuyduong/yabai-status-bar/blob/master/scripts/right_bar.sh).
 
