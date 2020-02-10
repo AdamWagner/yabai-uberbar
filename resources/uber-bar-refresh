@@ -2,8 +2,4 @@
 
 tell application "Übersicht"
 	refresh widget id "yabai-uberbar-jsx"
-	# refresh widget id "screens-jsx"
-	# refresh widget id "activeApp-jsx"
-	# refresh widget id "currentDesktop-coffee"
-	# refresh widget id "activeApp-coffee"
 end tell
