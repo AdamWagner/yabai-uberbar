@@ -1,10 +1,9 @@
 #!/bin/bash
 # Modified from: https://github.com/marshallbrekka/yabai-config/ on 2020-02-09
 
-# NOTE: If uebersicht details change and the websocket approach breaks,
-# set compatibility_mode="true"
+# NOTE: If uebersicht details change
+# and the websocket approach breaks, set compatibility_mode="true"
 compatibility_mode="false"
-compatibility_mode="true"
 
 # We can refresh ubersicht in 13ms instead of 117ms
 # by using `websocat` instead of Applescript (see details below).
@@ -21,7 +20,7 @@ compatibility_mode="true"
 if [[ $(type -P websocat) = "" || "$compatibility_mode" = "true" ]]; then
    echo "Falling back to applescript, websocat not installed. https://github.com/vi/websocat"
    osascript -e 'tell application id "tracesOf.Uebersicht" to refresh widget id "yabai-uberbar-jsx"'
-   return
+   exit 0
 fi
 
 # This is the Uebersicht server address.
