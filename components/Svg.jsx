@@ -11,7 +11,6 @@ const SvgRect = ({ width, height }) => (
       strokeWidth="50"
       fillOpacity="1"
    />
-
 );
 
 const SvgGroup = ({ children }) => (
@@ -66,7 +65,6 @@ const MaxIcon = ({ width, height }) => (
       <path d="M1404.2 680.723L1330.06 754.453C1311.52 773.315 1311.52 804.179 1330.06 823.04L1405.88 900.2L1308.15 994.507H1645.15V668.72L1550.79 759.597L1471.6 679.008C1453.06 661.861 1422.73 661.861 1404.2 680.723Z" />
    </svg>
 );
-
 
 export {
    Svg, SvgRect, SvgGroup, SvgBlur, CenteredText, MaxIcon,
