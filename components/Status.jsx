@@ -14,8 +14,7 @@ const getbatteryStatus = ({ amount, state }) => {
             <div>
                <span>{item.icon}</span>
                <span>
-                  {amount}
-%
+                  {amount}%
                </span>
             </div>
          );
