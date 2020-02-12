@@ -11,7 +11,6 @@ export const initialState = '[]';
 
 export const refreshFrequency = false;
 
-
 export const updateState = event => event.output || initialState;
 
 export const render = (output) => {
